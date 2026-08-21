@@ -21,6 +21,9 @@ flutter run
 - Edit the sample Arabic paragraph
 - Switch built-in pattern sets (`arabic-naskh`, `arabic-nastaliq`,
   `arabic-simple`, `syriac`)
+- Switch fonts (Naskh, Amiri, Kufi, Nastaliq, Syriac, and others). Layout
+  measures and paints with the selected face; pick a matching pattern set
+  (the UI shows a suggestion)
 - Change font size and paragraph width
 - Cap min/max kashidas per connection
 - Toggle justification and kashida insertion independently

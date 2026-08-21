@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kashida/kashida.dart';
+import 'package:kashida_example/demo_fonts.dart';
 import 'package:kashida_example/justify.dart';
 
 void main() {
@@ -119,5 +120,38 @@ void main() {
     expect(clampParagraphWidth(680, 0), 680);
     expect(clampParagraphWidth(680, -20), 680);
     expect(clampParagraphWidth(680, double.nan), 680);
+  });
+
+  test('layout measures with the given TextStyle', () {
+    final set = builtinPatternSet('arabic-naskh')!;
+    const compact = TextStyle(fontSize: 12, height: 1.5);
+    const large = TextStyle(fontSize: 48, height: 1.5);
+    final few = layoutParagraph(sampleText, set, compact, width: 400);
+    final many = layoutParagraph(sampleText, set, large, width: 400);
+    expect(many.length, greaterThan(few.length));
+    expect(
+      measureWidth(sampleText, large),
+      greaterThan(measureWidth(sampleText, compact)),
+    );
+  });
+
+  test('a different fontFamily still lays out without throwing', () {
+    final set = builtinPatternSet('arabic-naskh')!;
+    const custom = TextStyle(
+      fontFamily: 'DemoCustomFace',
+      fontSize: 20,
+      height: 1.5,
+    );
+    final lines = layoutParagraph(sampleText, set, custom, width: 400);
+    expect(lines, isNotEmpty);
+    expect(lines.last.stretch, isFalse);
+  });
+
+  test('demo fonts suggest existing builtin pattern sets', () {
+    expect(demoFonts, isNotEmpty);
+    for (final font in demoFonts) {
+      expect(isBuiltinPatternSet(font.suggestedPattern), isTrue);
+    }
+    expect(demoFontById('missing').id, demoFonts.first.id);
   });
 }

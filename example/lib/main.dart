@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:kashida/kashida.dart';
+import 'package:kashida_example/demo_fonts.dart';
 import 'package:kashida_example/justify.dart';
 
 void main() {
@@ -33,6 +33,7 @@ class KashidaDemoPage extends StatefulWidget {
 class _KashidaDemoPageState extends State<KashidaDemoPage> {
   final _controller = TextEditingController(text: sampleText);
   String _patternName = 'arabic-naskh';
+  String _fontId = demoFonts.first.id;
   double _fontSize = 24;
   double _paragraphWidth = 600;
   double _minKashidas = 2;
@@ -46,10 +47,9 @@ class _KashidaDemoPageState extends State<KashidaDemoPage> {
     super.dispose();
   }
 
-  TextStyle get _textStyle => GoogleFonts.notoNaskhArabic(
-    fontSize: _fontSize,
-    height: 1.5,
-  );
+  DemoFont get _font => demoFontById(_fontId);
+
+  TextStyle get _textStyle => _font.styleAt(_fontSize);
 
   @override
   Widget build(BuildContext context) {
@@ -105,8 +105,26 @@ class _KashidaDemoPageState extends State<KashidaDemoPage> {
                 runSpacing: 12,
                 children: [
                   DropdownMenu<String>(
+                    initialSelection: _fontId,
+                    label: const Text('Font'),
+                    dropdownMenuEntries: [
+                      for (final font in demoFonts)
+                        DropdownMenuEntry(
+                          value: font.id,
+                          label: font.label,
+                        ),
+                    ],
+                    onSelected: (value) {
+                      if (value == null) {
+                        return;
+                      }
+                      setState(() => _fontId = value);
+                    },
+                  ),
+                  DropdownMenu<String>(
                     initialSelection: _patternName,
                     label: const Text('Pattern set'),
+                    helperText: 'Suggested: ${_font.suggestedPattern}',
                     dropdownMenuEntries: [
                       for (final name in builtinPatternSetNames())
                         DropdownMenuEntry(value: name, label: name),
