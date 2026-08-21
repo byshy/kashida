@@ -4,6 +4,15 @@ import 'package:kashida/kashida.dart';
 
 const kashidaChar = '\u{0640}';
 
+/// Uses [requested] unless the window is narrower, so layout can reflow
+/// instead of overflowing.
+double clampParagraphWidth(double requested, double available) {
+  if (available.isInfinite || available.isNaN || available <= 0) {
+    return requested;
+  }
+  return requested < available ? requested : available;
+}
+
 const sampleText =
     'قال أفلاطون: «الخط عقال العقل». وقال إقليدس '
     'الإغريقي: «الخط هندسة روحانية وإن ظهرت بآلة '
@@ -32,11 +41,11 @@ class LayoutWord {
 class JustifiedLine {
   const JustifiedLine({
     required this.words,
-    required this.spacing,
+    required this.stretch,
   });
 
   final List<LayoutWord> words;
-  final double spacing;
+  final bool stretch;
 
   String get text => words.map(elongated).join(' ');
 }
@@ -55,10 +64,15 @@ String elongated(LayoutWord word) {
   return out;
 }
 
-double measureWidth(String text, TextStyle style) {
+double measureWidth(
+  String text,
+  TextStyle style, {
+  TextScaler textScaler = TextScaler.noScaling,
+}) {
   final painter = TextPainter(
     text: TextSpan(text: text, style: style),
     textDirection: TextDirection.rtl,
+    textScaler: textScaler,
     maxLines: 1,
   )..layout();
   final width = painter.width;
@@ -66,8 +80,16 @@ double measureWidth(String text, TextStyle style) {
   return width;
 }
 
-double elongatedWidth(List<LayoutWord> words, TextStyle style) {
-  return measureWidth(words.map(elongated).join(' '), style);
+double elongatedWidth(
+  List<LayoutWord> words,
+  TextStyle style, {
+  TextScaler textScaler = TextScaler.noScaling,
+}) {
+  return measureWidth(
+    words.map(elongated).join(' '),
+    style,
+    textScaler: textScaler,
+  );
 }
 
 int _stringOffsetAfterGrapheme(String text, int graphemeIndex) {
@@ -107,12 +129,14 @@ List<List<LayoutWord>> _breakLines(
   List<LayoutWord> words,
   double width,
   TextStyle style,
+  TextScaler textScaler,
 ) {
   final lines = <List<LayoutWord>>[];
   var line = <LayoutWord>[];
   for (final word in words) {
     if (line.isNotEmpty &&
-        elongatedWidth([...line, word], style) > width) {
+        elongatedWidth([...line, word], style, textScaler: textScaler) >
+            width) {
       lines.add(line);
       line = [word];
     } else {
@@ -129,7 +153,8 @@ bool _insert(
   List<LayoutWord> words,
   KashidaSlot point,
   double width,
-  TextStyle style, {
+  TextStyle style,
+  TextScaler textScaler, {
   required int min,
   required int max,
 }) {
@@ -138,7 +163,7 @@ bool _insert(
     return false;
   }
   point.count = before == 0 ? (min < max ? min : max) : before + 1;
-  if (elongatedWidth(words, style) <= width) {
+  if (elongatedWidth(words, style, textScaler: textScaler) <= width) {
     return true;
   }
   point.count = before;
@@ -149,18 +174,28 @@ void _fillSlots(
   List<LayoutWord> words,
   List<KashidaSlot> slots,
   double width,
-  TextStyle style, {
+  TextStyle style,
+  TextScaler textScaler, {
   required int min,
   required int max,
 }) {
-  bool short() => elongatedWidth(words, style) < width;
+  bool short() =>
+      elongatedWidth(words, style, textScaler: textScaler) < width;
   while (short()) {
     var progressed = false;
     for (final point in slots) {
       if (!short()) {
         break;
       }
-      if (_insert(words, point, width, style, min: min, max: max)) {
+      if (_insert(
+        words,
+        point,
+        width,
+        style,
+        textScaler,
+        min: min,
+        max: max,
+      )) {
         progressed = true;
       }
     }
@@ -173,11 +208,13 @@ void _fillSlots(
 void _justifyArabic(
   List<LayoutWord> words,
   double width,
-  TextStyle style, {
+  TextStyle style,
+  TextScaler textScaler, {
   required int min,
   required int max,
 }) {
-  bool short() => elongatedWidth(words, style) < width;
+  bool short() =>
+      elongatedWidth(words, style, textScaler: textScaler) < width;
 
   final byPriority = <int, List<(LayoutWord, KashidaSlot)>>{};
   for (final word in words) {
@@ -206,7 +243,15 @@ void _justifyArabic(
         break;
       }
       final point = perWord[word]!;
-      while (_insert(words, point, width, style, min: min, max: max)) {
+      while (_insert(
+        words,
+        point,
+        width,
+        style,
+        textScaler,
+        min: min,
+        max: max,
+      )) {
         taken.add(word);
       }
     }
@@ -217,24 +262,23 @@ void _justifyArabic(
       for (final point in word.points)
         if (point.count > 0) point,
   ].reversed.toList();
-  _fillSlots(words, slots, width, style, min: min, max: max);
+  _fillSlots(words, slots, width, style, textScaler, min: min, max: max);
 }
 
 void _justifySyriac(
   List<LayoutWord> words,
   double width,
-  TextStyle style, {
+  TextStyle style,
+  TextScaler textScaler, {
   required int min,
   required int max,
 }) {
   final slots = [
     for (final word in words)
       if (word.points.isNotEmpty)
-        word.points.reduce(
-          (a, b) => a.priority >= b.priority ? a : b,
-        ),
+        word.points.reduce((a, b) => a.priority >= b.priority ? a : b),
   ];
-  _fillSlots(words, slots, width, style, min: min, max: max);
+  _fillSlots(words, slots, width, style, textScaler, min: min, max: max);
 }
 
 List<JustifiedLine> layoutParagraph(
@@ -242,6 +286,7 @@ List<JustifiedLine> layoutParagraph(
   PatternSet set,
   TextStyle style, {
   required double width,
+  TextScaler textScaler = TextScaler.noScaling,
   int minKashidas = 2,
   int maxKashidas = 4,
   bool justified = true,
@@ -254,7 +299,7 @@ List<JustifiedLine> layoutParagraph(
     set,
     removeExistingKashida: removeExistingKashida,
   );
-  final broken = _breakLines(words, width, style);
+  final broken = _breakLines(words, width, style, textScaler);
   final justify = syriac ? _justifySyriac : _justifyArabic;
 
   final out = <JustifiedLine>[];
@@ -262,14 +307,16 @@ List<JustifiedLine> layoutParagraph(
     final line = broken[index];
     final stretch = justified && index < broken.length - 1;
     if (stretch && applyKashida) {
-      justify(line, width, style, min: minKashidas, max: maxKashidas);
+      justify(
+        line,
+        width,
+        style,
+        textScaler,
+        min: minKashidas,
+        max: maxKashidas,
+      );
     }
-    final stretched = elongatedWidth(line, style);
-    final gaps = line.length - 1;
-    final spacing = stretch && gaps > 0 ? (width - stretched) / gaps : 0.0;
-    out.add(
-      JustifiedLine(words: line, spacing: spacing < 0 ? 0 : spacing),
-    );
+    out.add(JustifiedLine(words: line, stretch: stretch));
   }
   return out;
 }
