@@ -50,7 +50,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  kashida: ^0.0.2
+  kashida: ^0.0.3
 ```
 
 Then:

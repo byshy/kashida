@@ -1,3 +1,9 @@
+## 0.0.3
+
+* Expand the example into justify / find-and-insert / rules tabs.
+* Bundle Arabic and Syriac fonts in the example so they load on macOS as well as web.
+* Add a justify demo GIF to the README.
+
 ## 0.0.2
 
 * Insert tatweel with `insertKashida` and `insertKashidaAt`, or `KashidaAnalysis.insert` (same count at every point — not justification).
