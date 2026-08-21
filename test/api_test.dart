@@ -79,6 +79,12 @@ void main() {
       final b = builtinPatternSet('arabic-simple');
       expect(identical(a, b), isTrue);
       expect(a.patterns, isNotEmpty);
+      expect(a.id, 'arabic-simple');
+      expect(fillStyleFor(a), KashidaFillStyle.arabic);
+      expect(
+        fillStyleFor(requiredBuiltinPatternSet('syriac')),
+        KashidaFillStyle.syriac,
+      );
     });
 
     test('throws on an unknown name', () {
@@ -99,5 +105,20 @@ void main() {
     expect(kashida, '\u{0640}');
     expect(kashidaCodepoint, 0x0640);
     expect(kashida.characters.single, kashida);
+  });
+
+  test('endOffsetIn is the substring index after the grapheme', () {
+    const point = KashidaPoint(index: 0, priority: 1);
+    expect(point.endOffsetIn('بت'), 1);
+    expect(point.endOffsetIn('بَت'), 'بَ'.length);
+    expect(() => point.endOffsetIn(''), throwsRangeError);
+  });
+
+  test('findKashidaPointsIn matches findKashidaPointsPatterns', () {
+    final set = compilePatternText('ب2ت');
+    expect(
+      findKashidaPointsIn('بت', set),
+      findKashidaPointsPatterns('بت', set),
+    );
   });
 }

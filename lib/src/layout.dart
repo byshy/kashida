@@ -1,5 +1,3 @@
-import 'package:characters/characters.dart';
-
 import 'kashida_core.dart';
 import 'pattern.dart';
 
@@ -15,6 +13,11 @@ enum KashidaFillStyle {
   syriac,
 }
 
+/// Default fill for a pattern set: Syriac builtins use [KashidaFillStyle.syriac].
+KashidaFillStyle fillStyleFor(PatternSet set) {
+  return set.id == 'syriac' ? KashidaFillStyle.syriac : KashidaFillStyle.arabic;
+}
+
 class _Slot {
   _Slot({required this.offset, required this.priority});
 
@@ -28,10 +31,7 @@ class KashidaWord {
   KashidaWord({required this.text, required List<KashidaPoint> points})
     : _slots = [
         for (final point in points)
-          _Slot(
-            offset: _stringOffsetAfterGrapheme(text, point.index),
-            priority: point.priority,
-          ),
+          _Slot(offset: point.endOffsetIn(text), priority: point.priority),
       ];
 
   /// Word text (after optional tatweel stripping), without fill tatweels.
@@ -55,10 +55,6 @@ class KashidaWord {
   }
 }
 
-int _stringOffsetAfterGrapheme(String text, int graphemeIndex) {
-  return text.characters.take(graphemeIndex + 1).toString().length;
-}
-
 /// One wrapped line of [KashidaWord]s.
 class KashidaLine {
   /// Creates a line. [stretch] is true for justified lines that are not last.
@@ -72,6 +68,17 @@ class KashidaLine {
 
   /// The line as a single string with spaces between elongated words.
   String get text => words.map((w) => w.elongated()).join(' ');
+
+  /// Width still unused after tatweel fill, in [measure] units.
+  ///
+  /// Spread this between words in the UI (the example uses a `Row`).
+  double unusedWidth(double width, KashidaMeasure measure) {
+    final extra = width - measure(text);
+    if (!extra.isFinite || extra <= 0) {
+      return 0;
+    }
+    return extra;
+  }
 }
 
 double _elongatedWidth(List<KashidaWord> words, KashidaMeasure measure) {
@@ -229,18 +236,61 @@ void _justifySyriac(
 /// Wraps [text] to [width] and optionally fills lines with tatweel.
 ///
 /// [measure] is the only font/metrics hook: return the width of a string in
-/// the same units as [width]. The last line is not stretched.
+/// the same units as [width]. The last line of each newline-separated
+/// paragraph is not stretched.
+///
+/// [insertKashida] is a different operation: it does not wrap or honor width.
+///
+/// If [fill] is omitted, [fillStyleFor] picks Syriac fill for the `syriac`
+/// builtin and Arabic fill otherwise. [minKashidas] defaults to 1, matching
+/// [insertKashida]'s per-point count.
 List<KashidaLine> layoutParagraph(
   String text,
   PatternSet set, {
   required double width,
   required KashidaMeasure measure,
-  int minKashidas = 2,
+  int minKashidas = 1,
   int maxKashidas = 4,
   bool justified = true,
   bool applyKashida = true,
   bool removeExistingKashida = true,
-  KashidaFillStyle fill = KashidaFillStyle.arabic,
+  KashidaFillStyle? fill,
+}) {
+  final fillStyle = fill ?? fillStyleFor(set);
+  final out = <KashidaLine>[];
+  for (final block in text.split('\n')) {
+    if (block.trim().isEmpty) {
+      continue;
+    }
+    out.addAll(
+      _layoutBlock(
+        block,
+        set,
+        width: width,
+        measure: measure,
+        minKashidas: minKashidas,
+        maxKashidas: maxKashidas,
+        justified: justified,
+        applyKashida: applyKashida,
+        removeExistingKashida: removeExistingKashida,
+        fill: fillStyle,
+      ),
+    );
+  }
+  return out;
+}
+
+List<KashidaLine> _layoutBlock(
+  String text,
+  PatternSet set, {
+  required double width,
+  required KashidaMeasure measure,
+  required int minKashidas,
+  required int maxKashidas,
+  required bool justified,
+  required bool applyKashida,
+  required bool removeExistingKashida,
+  required KashidaFillStyle fill,
 }) {
   final words = _wordsFromText(
     text,

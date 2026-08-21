@@ -92,16 +92,40 @@ void main() {
     expect(kept.single.words.first.text, 'بـت');
   });
 
-  test('syriac fill does not throw', () {
+  test('syriac fill is inferred from the builtin set id', () {
     final lines = layoutParagraph(
       _sample,
       requiredBuiltinPatternSet('syriac'),
       width: 16,
       measure: _ems,
-      fill: KashidaFillStyle.syriac,
     );
     expect(lines, isNotEmpty);
     expect(lines.last.stretch, isFalse);
+  });
+
+  test('newlines start a new paragraph', () {
+    final lines = layoutParagraph(
+      'المستشفيات\nبيت بيت بيت',
+      naskh,
+      width: 80,
+      measure: _ems,
+    );
+    expect(lines.first.words.single.text, 'المستشفيات');
+    expect(lines.first.stretch, isFalse);
+    expect(lines.length, greaterThan(1));
+    expect(lines.expand((line) => line.words.map((w) => w.text)).toList(), [
+      'المستشفيات',
+      'بيت',
+      'بيت',
+      'بيت',
+    ]);
+  });
+
+  test('unusedWidth is leftover after fill', () {
+    final lines = layoutParagraph(_sample, naskh, width: 16, measure: _ems);
+    final stretched = lines.firstWhere((line) => line.stretch);
+    expect(stretched.unusedWidth(16, _ems), greaterThanOrEqualTo(0));
+    expect(stretched.unusedWidth(16, _ems), lessThan(16));
   });
 
   test('a larger measure wraps more', () {

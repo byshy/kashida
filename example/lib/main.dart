@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kashida/kashida.dart' hide layoutParagraph;
+import 'package:kashida/kashida.dart';
 import 'package:kashida_example/demo_fonts.dart';
 import 'package:kashida_example/justify.dart';
 
@@ -68,18 +68,6 @@ class _KashidaDemoPageState extends State<KashidaDemoPage> {
           final paragraphWidth = clampParagraphWidth(
             _paragraphWidth,
             availableWidth,
-          );
-          final lines = layoutParagraph(
-            text,
-            set,
-            _textStyle,
-            width: paragraphWidth,
-            textScaler: MediaQuery.textScalerOf(context),
-            minKashidas: _minKashidas.round(),
-            maxKashidas: _maxKashidas.round(),
-            justified: _justify,
-            applyKashida: _applyKashida,
-            syriac: _patternName.startsWith('syriac'),
           );
           final widthCapped = paragraphWidth < _paragraphWidth;
 
@@ -195,12 +183,35 @@ class _KashidaDemoPageState extends State<KashidaDemoPage> {
               const SizedBox(height: 8),
               _Section(
                 title: _justify
-                    ? 'Justified (last line left short)'
+                    ? 'Justified (last line of each paragraph left short)'
                     : 'Unjustified',
-                child: _ParagraphView(
-                  lines: lines,
-                  width: paragraphWidth,
-                  style: _textStyle,
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: paragraphWidth,
+                        child: KashidaText(
+                          text,
+                          patternSet: set,
+                          width: paragraphWidth,
+                          style: _textStyle,
+                          textScaler: MediaQuery.textScalerOf(context),
+                          minKashidas: _minKashidas.round(),
+                          maxKashidas: _maxKashidas.round(),
+                          justified: _justify,
+                          applyKashida: _applyKashida,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -243,81 +254,6 @@ class _Section extends StatelessWidget {
         Text(title, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         child,
-      ],
-    );
-  }
-}
-
-class _ParagraphView extends StatelessWidget {
-  const _ParagraphView({
-    required this.lines,
-    required this.width,
-    required this.style,
-  });
-
-  final List<KashidaLine> lines;
-  final double width;
-  final TextStyle style;
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topRight,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: SizedBox(
-            width: width,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final line in lines)
-                  _JustifiedLineView(line: line, style: style),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _JustifiedLineView extends StatelessWidget {
-  const _JustifiedLineView({required this.line, required this.style});
-
-  final KashidaLine line;
-  final TextStyle style;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!line.stretch || line.words.length < 2) {
-      return Text(
-        line.text,
-        textDirection: TextDirection.rtl,
-        textAlign: TextAlign.start,
-        softWrap: false,
-        maxLines: 1,
-        style: style,
-      );
-    }
-    return Row(
-      textDirection: TextDirection.rtl,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        for (final word in line.words)
-          Text(
-            word.elongated(),
-            textDirection: TextDirection.rtl,
-            softWrap: false,
-            maxLines: 1,
-            style: style,
-          ),
       ],
     );
   }

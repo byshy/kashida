@@ -23,6 +23,9 @@ bool isBuiltinPatternSet(String name) => _builtinPatternSetNames.contains(name);
 
 /// The compiled built-in set named [name], or `null` if it is unknown.
 ///
+/// Prefer [requiredBuiltinPatternSet] in application code. Use this when you
+/// are probing a name that may not exist.
+///
 /// Results are cached. Pass the same names as in [builtinPatternSetNames].
 PatternSet? builtinPatternSet(String name) {
   final cached = _cache[name];
@@ -42,9 +45,10 @@ PatternSet? builtinPatternSet(String name) {
     default:
       return null;
   }
-  final set = compilePatternText(text);
-  _cache[name] = set;
-  return set;
+  final compiled = compilePatternText(text);
+  final tagged = PatternSet(compiled.patterns, id: name);
+  _cache[name] = tagged;
+  return tagged;
 }
 
 /// The compiled built-in set named [name].

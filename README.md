@@ -7,8 +7,18 @@ Syriac text, driven by a small pattern language.
 Given a string and a compiled pattern set, the package finds connections
 that may take a kashida and a priority from 0–9 (higher is better). Detection
 is based on text analysis and kashida rules. It does **not** take fonts or
-shaping into account. Use `insertKashida` to splice tatweel, or
-`layoutParagraph` with your own `measure` function to wrap and fill a line.
+shaping into account by itself.
+
+There are three separate steps:
+
+1. **Find points** — `findKashidaPoints`
+2. **Insert a fixed number of tatweels at every point** — `insertKashida`
+   (not justification)
+3. **Wrap to a width and fill by priority** — `layoutParagraph`,
+   `layoutParagraphStyled`, or the `KashidaText` widget
+
+`KashidaPoint.index` is a **grapheme** index. Do not pass it to
+`substring`; use `point.endOffsetIn(text)` or `insertKashidaAt`.
 
 For background, see Khaled Hosny’s
 [introduction to raqim-kashida](https://aliftype.com/blog/introducing-raqim-kashida/english)
@@ -49,28 +59,48 @@ import 'package:kashida/kashida.dart';
 void main() {
   final set = requiredBuiltinPatternSet('arabic-simple');
 
-  // Points only
   final found = findKashidaPoints('بيت', set);
   for (final point in found.points) {
-    print('${point.priority} @ ${point.index}');
+    print('${point.priority} @ grapheme ${point.index}');
   }
 
-  // Original text in, elongated string out
-  print(insertKashida('بيت', set)); // بيت with tatweel at the chosen points
+  // Same count at every allowed join — not a justified line.
+  print(insertKashida('بيت', set));
 }
 ```
 
-`findKashidaPointsPatterns` skips stripping and returns points only.
+`findKashidaPointsIn` (also named `findKashidaPointsPatterns`) skips stripping.
 
-To wrap a paragraph to a width, pass a `measure` callback in the same units
-as `width` (for example `TextPainter` in Flutter):
+To justify to a pixel width in Flutter:
 
 ```dart
-final lines = layoutParagraph(
-  text,
+final set = requiredBuiltinPatternSet('arabic-naskh');
+
+// Widget: leftover space goes between words.
+KashidaText(
+  paragraph,
+  patternSet: set,
+  width: 320,
+  style: const TextStyle(fontSize: 22),
+);
+
+// Or measure yourself:
+final lines = layoutParagraphStyled(
+  paragraph,
+  set,
+  const TextStyle(fontSize: 22),
+  width: 320,
+);
+```
+
+A `measure` callback is the font hook if you are not using Flutter painting:
+
+```dart
+layoutParagraph(
+  paragraph,
   set,
   width: 320,
-  measure: (line) => /* your glyph width for line */,
+  measure: (line) => /* width of line in the same units as 320 */,
 );
 ```
 
@@ -96,13 +126,13 @@ for the grammar, length guards, priorities, and `!` suppression.
 | `arabic-simple` | Simple / kufic-style faces (Microsoft-style newspaper rules) |
 | `syriac` | Syriac, following the LibreOffice / expert guidelines |
 
-`builtinPatternSetNames()` and `isBuiltinPatternSet(name)` list and check them.
-`requiredBuiltinPatternSet(name)` throws if the name is unknown.
+`requiredBuiltinPatternSet(name)` is the usual lookup (throws if unknown).
+`builtinPatternSet(name)` returns `null` instead, for probing names.
 
 ### Example app
 
-The `example/` app wraps text to a pixel width, inserts tatweel at the
-highest-priority points, and uses leftover space between words. Run:
+The `example/` app is a playground around `KashidaText`: pick a font and
+pattern set, then wrap a paragraph. Run:
 
 ```sh
 cd example
@@ -126,6 +156,6 @@ Issues and contributions are welcome on the package repository. Please include
 a small Arabic or Syriac sample and the pattern set name when reporting
 justification or matching bugs.
 
-The original crate is MIT-licensed. This port keeps the same spirit: you may
-use it in your own typesetting code. Insertion is U+0640; filling a pixel
-width still needs a font-aware `measure` function.
+Insertion is U+0640. Filling a pixel width needs a font-aware `measure`
+or `KashidaText`. Leftover space thinner than one tatweel is returned as
+`unusedWidth` and spread between words by the widget.

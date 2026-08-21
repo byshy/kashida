@@ -25,15 +25,7 @@ double measureWidth(
   TextStyle style, {
   TextScaler textScaler = TextScaler.noScaling,
 }) {
-  final painter = TextPainter(
-    text: TextSpan(text: text, style: style),
-    textDirection: TextDirection.rtl,
-    textScaler: textScaler,
-    maxLines: 1,
-  )..layout();
-  final width = painter.width;
-  painter.dispose();
-  return width;
+  return kashida.measureTextWidth(text, style, textScaler: textScaler);
 }
 
 /// Wraps and justifies using [style] for measurement and painting.
@@ -50,18 +42,17 @@ List<kashida.KashidaLine> layoutParagraph(
   bool removeExistingKashida = true,
   bool syriac = false,
 }) {
-  return kashida.layoutParagraph(
+  return kashida.layoutParagraphStyled(
     text,
     set,
+    style,
     width: width,
-    measure: (value) => measureWidth(value, style, textScaler: textScaler),
+    textScaler: textScaler,
     minKashidas: minKashidas,
     maxKashidas: maxKashidas,
     justified: justified,
     applyKashida: applyKashida,
     removeExistingKashida: removeExistingKashida,
-    fill: syriac
-        ? kashida.KashidaFillStyle.syriac
-        : kashida.KashidaFillStyle.arabic,
+    fill: syriac ? kashida.KashidaFillStyle.syriac : null,
   );
 }

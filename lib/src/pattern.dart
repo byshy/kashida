@@ -109,10 +109,16 @@ class CompiledPattern {
 /// A compiled set of kashida insertion patterns.
 class PatternSet {
   /// Creates a set from already-compiled patterns.
-  const PatternSet(this.patterns);
+  ///
+  /// [id] is the builtin name when this set came from
+  /// [requiredBuiltinPatternSet], and is used to pick a default fill style.
+  const PatternSet(this.patterns, {this.id});
 
   /// Patterns in source order, including those pulled in by a `use` line.
   final List<CompiledPattern> patterns;
+
+  /// Builtin id such as `arabic-naskh` or `syriac`, if any.
+  final String? id;
 }
 
 String _stripComment(String raw) {

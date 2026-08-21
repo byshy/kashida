@@ -12,10 +12,22 @@ class KashidaPoint {
   const KashidaPoint({required this.index, required this.priority});
 
   /// The grapheme cluster index the kashida goes after.
+  ///
+  /// This is **not** a `String`/`substring` offset. Combining marks make those
+  /// diverge. Use [endOffsetIn] or [insertKashidaAt].
   final int index;
 
   /// The kashida point priority, from 0–9. Higher is more preferable.
   final int priority;
+
+  /// UTF-16 offset in [text] *after* this grapheme, for `substring`.
+  int endOffsetIn(String text) {
+    final clusters = text.characters;
+    if (index < 0 || index >= clusters.length) {
+      throw RangeError.index(index, clusters, 'index');
+    }
+    return clusters.take(index + 1).toString().length;
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -70,11 +82,11 @@ bool _samePoints(List<KashidaPoint> a, List<KashidaPoint> b) {
   return true;
 }
 
-/// Kashida insertion points for [text] from [set] alone.
+/// Insertion points in [text] without stripping existing tatweel.
 ///
-/// Unlike [findKashidaPoints], this does not strip existing tatweel.
-/// Indices are grapheme-cluster offsets into [text] as given.
-List<KashidaPoint> findKashidaPointsPatterns(String text, PatternSet set) {
+/// Indices are grapheme-cluster offsets into [text] as given. Prefer this
+/// over [findKashidaPointsPatterns], which is the same function.
+List<KashidaPoint> findKashidaPointsIn(String text, PatternSet set) {
   final graphemes = splitGraphemes(text);
   final out = <KashidaPoint>[];
   for (final run in joinedRuns(graphemes)) {
@@ -82,6 +94,10 @@ List<KashidaPoint> findKashidaPointsPatterns(String text, PatternSet set) {
   }
   return out;
 }
+
+/// Same as [findKashidaPointsIn] (historical name from raqim-kashida).
+List<KashidaPoint> findKashidaPointsPatterns(String text, PatternSet set) =>
+    findKashidaPointsIn(text, set);
 
 /// [text] with bare tatweel (U+0640) removed.
 ///
@@ -117,7 +133,7 @@ KashidaAnalysis findKashidaPoints(
   final cleaned = removeExistingKashida ? stripBareTatweel(text) : text;
   return KashidaAnalysis(
     text: cleaned,
-    points: findKashidaPointsPatterns(cleaned, set),
+    points: findKashidaPointsIn(cleaned, set),
   );
 }
 
@@ -150,7 +166,10 @@ String insertKashidaAt(
   return clusters.join();
 }
 
-/// Finds kashida points in [text] and returns the string with tatweel inserted.
+/// Finds kashida points in [text] and inserts [count] tatweels at **each**.
+///
+/// This is not line justification: every allowed join gets the same [count].
+/// To fill a width using priorities, use [layoutParagraph] or [KashidaText].
 String insertKashida(
   String text,
   PatternSet set, {
