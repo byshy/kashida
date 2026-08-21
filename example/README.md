@@ -1,11 +1,7 @@
 # Kashida example
 
-A Flutter app that uses the `kashida` package to find tatweel insertion points,
-then justifies a paragraph to a pixel width.
-
-The package finds points, can insert a fixed number of tatweels, or can wrap
-and fill a line. This example uses `KashidaText`: measure with the selected
-font, insert U+0640 by priority, and put leftover pixels between words.
+A Flutter app that uses every public entry point of the `kashida` package.
+A screen capture of the Justify tab is on the [package README](../README.md).
 
 ## Run
 
@@ -16,16 +12,18 @@ cd example
 flutter run
 ```
 
-## What you can try
+Fonts are bundled under `fonts/` (OFL). They load on macOS, iOS, Android, and
+web without downloading Google Fonts at runtime.
 
-- Edit the sample Arabic paragraph
-- Switch built-in pattern sets (`arabic-naskh`, `arabic-nastaliq`,
-  `arabic-simple`, `syriac`)
-- Switch fonts (Naskh, Amiri, Kufi, Nastaliq, Syriac, and others). Layout
-  measures and paints with the selected face; pick a matching pattern set
-  (the UI shows a suggestion)
-- Change font size and paragraph width
-- Cap min/max kashidas per connection
-- Toggle justification and kashida insertion independently
+## Tabs
 
-`lib/justify.dart` holds wrapping and elongation. `lib/main.dart` is the UI.
+- **Justify** — `KashidaText` wraps and fills a pixel width. Last line of
+  each paragraph stays short. Leftover space thinner than a tatweel is
+  reported as `unusedWidth`.
+- **Find & insert** — same points, three operations: find
+  (`findKashidaPoints`), stamp every join (`insertKashida`), or fill a width
+  (`layoutParagraph`).
+- **Rules** — live `compilePatternText`, including `use` of a built-in set
+  and `CompileError` when a line is invalid.
+
+Switching to the Syriac pattern (or Noto Sans Syriac) loads a Syriac sample.

@@ -10,7 +10,6 @@ dependencies:
   characters: ^1.4.1
   flutter:
     sdk: flutter
-  google_fonts: ^8.2.1
   kashida:
     path: ..
 
@@ -21,3 +20,28 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Noto Naskh Arabic
+      fonts:
+        - asset: fonts/NotoNaskhArabic-Regular.ttf
+    - family: Amiri
+      fonts:
+        - asset: fonts/Amiri-Regular.ttf
+    - family: Scheherazade New
+      fonts:
+        - asset: fonts/ScheherazadeNew-Regular.ttf
+    - family: Lateef
+      fonts:
+        - asset: fonts/Lateef-Regular.ttf
+    - family: Noto Sans Arabic
+      fonts:
+        - asset: fonts/NotoSansArabic-Regular.ttf
+    - family: Noto Kufi Arabic
+      fonts:
+        - asset: fonts/NotoKufiArabic-Regular.ttf
+    - family: Noto Nastaliq Urdu
+      fonts:
+        - asset: fonts/NotoNastaliqUrdu-Regular.ttf
+    - family: Noto Sans Syriac
+      fonts:
+        - asset: fonts/NotoSansSyriac-Regular.ttf

@@ -25,6 +25,13 @@ For background, see Khaled Hosny’s
 and the
 [interactive demo](https://aliftype.com/raqim-kashida/english/).
 
+## Demo
+
+The example’s **Justify** tab: pick a face and a pattern set, then fill a
+pixel width. Last line of each paragraph stays short.
+
+![Justifying a paragraph with kashida](doc/justify.gif)
+
 ## Features
 
 - Compile pattern text, including `use` of a built-in set
@@ -34,7 +41,8 @@ and the
 - Wrap and fill lines given a width and a `measure` callback
 - Grapheme-cluster indices, joining analysis, and rasm folding matching the
   original library
-- A Flutter example that justifies a paragraph from those points
+- A Flutter example with three tabs (justify, find & insert, custom rules);
+  Arabic and Syriac faces are bundled so they work on macOS and web
 
 ## Getting started
 
@@ -131,8 +139,15 @@ for the grammar, length guards, priorities, and `!` suppression.
 
 ### Example app
 
-The `example/` app is a playground around `KashidaText`: pick a font and
-pattern set, then wrap a paragraph. Run:
+`example/` is a three-tab playground for the public API:
+
+1. **Justify** — `KashidaText` / `layoutParagraphStyled` fills a pixel width
+2. **Find & insert** — `findKashidaPoints`, `insertKashida`, `layoutParagraph`
+3. **Rules** — `compilePatternText`, built-in lookup, `CompileError`
+
+Arabic and Syriac faces are bundled in `example/fonts/` (OFL) so they load on
+macOS as well as web, with no runtime Google Fonts download. Switching to the
+Syriac pattern or Noto Sans Syriac loads a Syriac sample.
 
 ```sh
 cd example

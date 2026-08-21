@@ -13,12 +13,22 @@ double clampParagraphWidth(double requested, double available) {
   return requested < available ? requested : available;
 }
 
-const sampleText =
+const arabicSample =
     'قال أفلاطون: «الخط عقال العقل». وقال إقليدس '
     'الإغريقي: «الخط هندسة روحانية وإن ظهرت بآلة '
     'جسمانية». وقال أبو دلف رحالة القرن العاشر '
     'الميلادي: «الخط رياض العلوم». وقال النظام المعتزلي: '
     '«الخط أصيل في الروح وإن ظهر بحواس البدن».';
+
+/// John 1:1, a short joined Syriac run that takes kashida well on camera.
+const syriacSample =
+    'ܒܪܫܝܬ ܐܝܬܘܗܝ ܗܘܐ ܡܠܬܐ ܘܗܘ ܡܠܬܐ ܐܝܬܘܗܝ ܗܘܐ '
+    'ܠܘܬ ܐܠܗܐ ܘܐܠܗܐ ܐܝܬܘܗܝ ܗܘܐ ܗܘ ܡܠܬܐ.';
+
+const sampleText = arabicSample;
+
+/// A word that already contains a bare tatweel, used to show stripping.
+const tatweelSample = 'بـيت المستشفيات';
 
 double measureWidth(
   String text,
