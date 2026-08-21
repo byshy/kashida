@@ -6,16 +6,18 @@ import 'package:kashida/src/unicode/joining.dart';
 
 List<(int, int)> points(String word, String text) {
   final set = compilePatternText(text);
-  return findKashidaPointsPatterns(word, set)
-      .map((k) => (k.index, k.priority))
-      .toList();
+  return findKashidaPointsPatterns(
+    word,
+    set,
+  ).map((k) => (k.index, k.priority)).toList();
 }
 
 List<(int, int)> builtinPoints(String name, String word) {
   final set = builtinPatternSet(name)!;
-  return findKashidaPointsPatterns(word, set)
-      .map((k) => (k.index, k.priority))
-      .toList();
+  return findKashidaPointsPatterns(
+    word,
+    set,
+  ).map((k) => (k.index, k.priority)).toList();
 }
 
 String errMsg(String text) {
@@ -288,7 +290,10 @@ void main() {
     expect(errMsg('ب3\\6ت'), contains('must not increase'));
     expect(errMsg('ب9\\خت'), contains('Expected a digit after'));
     expect(errMsg('ب\\3ت'), contains('must follow a priority digit'));
-    expect(errMsg('{@Beh @Nope} 2 ت'), contains('Unknown Unicode Joining_Group'));
+    expect(
+      errMsg('{@Beh @Nope} 2 ت'),
+      contains('Unknown Unicode Joining_Group'),
+    );
     expect(errMsg('{@Beh Noon} 2 ت'), contains('Stray character'));
     expect(errMsg('> ب2ت'), contains('Stray character'));
     expect(errMsg('{@Beh 2 ت'), contains('Unterminated “{”'));
@@ -424,10 +429,14 @@ void main() {
     }
 
     expect(ranked('ܥܥܥܥܥܥܥ'), [5, 4, 3, 0, 1, 2]);
-    expect(
-      ranked('ܥܥܥܥܥ\u{073F}\u{073E}ܥ\u{073F}\u{073E}ܥ\u{073F}\u{073E}'),
-      [5, 4, 3, 0, 1, 2],
-    );
+    expect(ranked('ܥܥܥܥܥ\u{073F}\u{073E}ܥ\u{073F}\u{073E}ܥ\u{073F}\u{073E}'), [
+      5,
+      4,
+      3,
+      0,
+      1,
+      2,
+    ]);
     expect(ranked('ܥܥـܥܥܥܥ')[0], 2);
   });
 
@@ -490,29 +499,33 @@ void main() {
   test('manual tatweel', () {
     final set = builtinPatternSet('arabic-simple')!;
     const seated = 'ب\u{0640}\u{064E}\u{0654}ت';
-    expect(findKashidaPoints(seated, set, true).$1, seated);
+    expect(findKashidaPoints(seated, set).text, seated);
     const below = 'ب\u{0640}\u{0655}ت';
-    expect(findKashidaPoints(below, set, true).$1, below);
+    expect(findKashidaPoints(below, set).text, below);
     const harakah = 'ب\u{0640}\u{064E}ت';
-    expect(findKashidaPoints(harakah, set, true).$1, harakah);
+    expect(findKashidaPoints(harakah, set).text, harakah);
     expect(points('بـتر', '[4]ت2ر'), [(2, 2)]);
     expect(points('بـت', 'ب2*'), [(0, 2)]);
     expect(points('بـت', 'ـ 9'), [(1, 9)]);
     expect(points('بـت', '@Tatweel 9'), [(1, 9)]);
     final naskh = builtinPatternSet('arabic-naskh')!;
-    final merged = findKashidaPoints('سـبل', naskh, false).$2
-        .map((k) => (k.index, k.priority))
-        .toList();
+    final merged = findKashidaPoints(
+      'سـبل',
+      naskh,
+      removeExistingKashida: false,
+    ).points.map((k) => (k.index, k.priority)).toList();
     expect(merged, [(2, 3)]);
   });
 
   test('existing kashida matches like any letter', () {
     final set = compilePatternText('ـ 5');
-    final pts = findKashidaPoints('بـت', set, false).$2
-        .map((k) => (k.index, k.priority))
-        .toList();
+    final pts = findKashidaPoints(
+      'بـت',
+      set,
+      removeExistingKashida: false,
+    ).points.map((k) => (k.index, k.priority)).toList();
     expect(pts, [(1, 5)]);
-    expect(findKashidaPoints('بـت', set, true).$2, isEmpty);
+    expect(findKashidaPoints('بـت', set).points, isEmpty);
   });
 
   test('conflicting weights at one connection are rejected', () {
@@ -548,7 +561,7 @@ void main() {
       ('ٱلصَّـٰلِحَـٰتِ', [(3, 5)], [(2, 5)]),
     ];
     for (final (word, seated, bare) in cases) {
-      expect(findKashidaPoints(word, set, true).$1, word, reason: word);
+      expect(findKashidaPoints(word, set).text, word, reason: word);
       expect(builtinPoints('arabic-naskh', word), seated, reason: word);
       final stripped = String.fromCharCodes(
         word.runes.where((c) => c != 0x0640),
@@ -567,10 +580,10 @@ void main() {
 
   test('find kashida points strips or keeps user tatweel', () {
     final set = builtinPatternSet('arabic-simple')!;
-    expect(findKashidaPoints('بـت', set, true).$1, 'بت');
-    final kept = findKashidaPoints('بـت', set, false);
-    expect(kept.$1, 'بـت');
-    expect(kept.$2.any((k) => k.index == 1 && k.priority == 9), isTrue);
+    expect(findKashidaPoints('بـت', set).text, 'بت');
+    final kept = findKashidaPoints('بـت', set, removeExistingKashida: false);
+    expect(kept.text, 'بـت');
+    expect(kept.points.any((k) => k.index == 1 && k.priority == 9), isTrue);
   });
 
   test('readme length ladder words', () {

@@ -1,6 +1,6 @@
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kashida/kashida.dart';
+import 'package:kashida/kashida.dart' hide layoutParagraph;
 import 'package:kashida_example/demo_fonts.dart';
 import 'package:kashida_example/justify.dart';
 
@@ -66,10 +66,7 @@ void main() {
     );
     expect(lines.length, greaterThan(1));
     expect(lines.take(lines.length - 1).every((line) => line.stretch), isTrue);
-    expect(
-      lines.every((line) => !line.text.contains('\u{0640}')),
-      isTrue,
-    );
+    expect(lines.every((line) => !line.text.contains('\u{0640}')), isTrue);
   });
 
   test('layout keeps every word of the source text', () {
@@ -78,7 +75,10 @@ void main() {
     final laidOut = lines
         .expand((line) => line.words.map((word) => word.text))
         .join(' ');
-    final source = sampleText.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).join(' ');
+    final source = sampleText
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .join(' ');
     expect(laidOut, source);
   });
 

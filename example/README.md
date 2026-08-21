@@ -3,9 +3,11 @@
 A Flutter app that uses the `kashida` package to find tatweel insertion points,
 then justifies a paragraph to a pixel width.
 
-The package only reports **where** kashida may go and at what **priority**. This
-example is the layout pass: wrap lines, insert U+0640 at the best points, and
-spread leftover space between words.
+The package only reports **where** kashida may go and at what **priority**,
+or it can insert tatweel / wrap lines if you call those APIs. This
+example is a Flutter layout pass: wrap lines, insert U+0640 at the best
+points using the selected font's metrics, and spread leftover space between
+words.
 
 ## Run
 

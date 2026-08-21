@@ -46,3 +46,14 @@ PatternSet? builtinPatternSet(String name) {
   _cache[name] = set;
   return set;
 }
+
+/// The compiled built-in set named [name].
+///
+/// Throws [ArgumentError] if [name] is not in [builtinPatternSetNames].
+PatternSet requiredBuiltinPatternSet(String name) {
+  final set = builtinPatternSet(name);
+  if (set == null) {
+    throw ArgumentError.value(name, 'name', 'Unknown built-in pattern set');
+  }
+  return set;
+}

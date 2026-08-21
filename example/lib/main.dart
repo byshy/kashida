@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kashida/kashida.dart';
+import 'package:kashida/kashida.dart' hide layoutParagraph;
 import 'package:kashida_example/demo_fonts.dart';
 import 'package:kashida_example/justify.dart';
 
@@ -53,9 +53,9 @@ class _KashidaDemoPageState extends State<KashidaDemoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final set = builtinPatternSet(_patternName)!;
+    final set = requiredBuiltinPatternSet(_patternName);
     final text = _controller.text;
-    final (_, points) = findKashidaPoints(text, set, true);
+    final points = findKashidaPoints(text, set).points;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Kashida example')),
@@ -109,10 +109,7 @@ class _KashidaDemoPageState extends State<KashidaDemoPage> {
                     label: const Text('Font'),
                     dropdownMenuEntries: [
                       for (final font in demoFonts)
-                        DropdownMenuEntry(
-                          value: font.id,
-                          label: font.label,
-                        ),
+                        DropdownMenuEntry(value: font.id, label: font.label),
                     ],
                     onSelected: (value) {
                       if (value == null) {
@@ -162,7 +159,7 @@ class _KashidaDemoPageState extends State<KashidaDemoPage> {
               Text(
                 widthCapped
                     ? 'Paragraph width: ${paragraphWidth.round()}px '
-                        '(capped from ${_paragraphWidth.round()}px)'
+                          '(capped from ${_paragraphWidth.round()}px)'
                     : 'Paragraph width: ${_paragraphWidth.round()}px',
               ),
               Slider(
@@ -258,7 +255,7 @@ class _ParagraphView extends StatelessWidget {
     required this.style,
   });
 
-  final List<JustifiedLine> lines;
+  final List<KashidaLine> lines;
   final double width;
   final TextStyle style;
 
@@ -294,7 +291,7 @@ class _ParagraphView extends StatelessWidget {
 class _JustifiedLineView extends StatelessWidget {
   const _JustifiedLineView({required this.line, required this.style});
 
-  final JustifiedLine line;
+  final KashidaLine line;
   final TextStyle style;
 
   @override
@@ -315,7 +312,7 @@ class _JustifiedLineView extends StatelessWidget {
       children: [
         for (final word in line.words)
           Text(
-            elongated(word),
+            word.elongated(),
             textDirection: TextDirection.rtl,
             softWrap: false,
             maxLines: 1,

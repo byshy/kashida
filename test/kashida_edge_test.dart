@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kashida/kashida.dart';
-import 'package:kashida/src/grapheme.dart';
 import 'package:kashida/src/unicode/joining.dart';
 
 void main() {
@@ -18,8 +17,7 @@ void main() {
     test('wildcard pattern marks every connection', () {
       final set = compilePatternText('* 5 *');
       expect(
-        findKashidaPointsPatterns('بيت', set)
-            .map((k) => (k.index, k.priority)),
+        findKashidaPointsPatterns('بيت', set).map((k) => (k.index, k.priority)),
         [(0, 5), (1, 5)],
       );
     });
@@ -39,10 +37,9 @@ void main() {
     });
 
     test('later use still lets following rules override', () {
-      expect(
-        compileAndPoints('سبت', 'use arabic-simple\n{@Seen @Sad} ! *'),
-        [(1, 3)],
-      );
+      expect(compileAndPoints('سبت', 'use arabic-simple\n{@Seen @Sad} ! *'), [
+        (1, 3),
+      ]);
     });
 
     test('builtin sets are cached and case-sensitive', () {
@@ -68,9 +65,9 @@ void main() {
   group('empty and non-joining input', () {
     test('empty and whitespace text have no points', () {
       final set = builtinPatternSet('arabic-naskh')!;
-      final empty = findKashidaPoints('', set, true);
-      expect(empty.$1, isEmpty);
-      expect(empty.$2, isEmpty);
+      final empty = findKashidaPoints('', set);
+      expect(empty.text, isEmpty);
+      expect(empty.points, isEmpty);
       expect(findKashidaPointsPatterns('   \n\t  ', set), isEmpty);
       expect(findKashidaPointsPatterns('Hello, world!', set), isEmpty);
       expect(findKashidaPointsPatterns('١٢٣', set), isEmpty);
@@ -86,8 +83,10 @@ void main() {
       final set = compilePatternText('ب2ت');
       expect(findKashidaPointsPatterns('بxت', set), isEmpty);
       expect(
-        findKashidaPointsPatterns('بت بت', set)
-            .map((k) => (k.index, k.priority)),
+        findKashidaPointsPatterns(
+          'بت بت',
+          set,
+        ).map((k) => (k.index, k.priority)),
         [(0, 2), (3, 2)],
       );
     });
@@ -102,23 +101,26 @@ void main() {
   group('stripping and indices', () {
     test('trailing and lone bare tatweels are stripped', () {
       final set = compilePatternText('ب2ت');
-      expect(findKashidaPoints('ـ', set, true).$1, '');
-      expect(findKashidaPoints('بـ', set, true).$1, 'ب');
-      expect(findKashidaPoints('ـبت', set, true).$1, 'بت');
-      expect(findKashidaPoints('بــت', set, true).$1, 'بت');
+      expect(findKashidaPoints('ـ', set).text, '');
+      expect(findKashidaPoints('بـ', set).text, 'ب');
+      expect(findKashidaPoints('ـبت', set).text, 'بت');
+      expect(findKashidaPoints('بــت', set).text, 'بت');
     });
 
     test('points refer to the cleaned string after stripping', () {
       final set = compilePatternText('ب2ت');
-      final (cleaned, found) = findKashidaPoints('بـت', set, true);
-      expect(cleaned, 'بت');
-      expect(found, [const KashidaPoint(index: 0, priority: 2)]);
+      final found = findKashidaPoints('بـت', set);
+      expect(found.text, 'بت');
+      expect(found.points, [const KashidaPoint(index: 0, priority: 2)]);
     });
 
     test('stripBareTatweel is a no-op when there is no tatweel', () {
       final set = compilePatternText('ب2ت');
-      expect(findKashidaPoints('بت', set, true).$1, 'بت');
-      expect(findKashidaPoints('بت', set, false).$1, 'بت');
+      expect(findKashidaPoints('بت', set).text, 'بت');
+      expect(
+        findKashidaPoints('بت', set, removeExistingKashida: false).text,
+        'بت',
+      );
     });
   });
 
@@ -181,9 +183,10 @@ void main() {
 
 List<(int, int)> compileAndPoints(String word, String pattern) {
   final set = compilePatternText(pattern);
-  return findKashidaPointsPatterns(word, set)
-      .map((k) => (k.index, k.priority))
-      .toList();
+  return findKashidaPointsPatterns(
+    word,
+    set,
+  ).map((k) => (k.index, k.priority)).toList();
 }
 
 CompileError compileError(String pattern) {

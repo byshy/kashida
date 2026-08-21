@@ -1,6 +1,6 @@
 name: kashida
 description: "Finding kashida (tatweel) insertion points and priorities, driven by a small pattern language."
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/byshy/kashida
 repository: https://github.com/byshy/kashida
 issue_tracker: https://github.com/byshy/kashida/issues

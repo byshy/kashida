@@ -77,6 +77,9 @@ class OpenLength extends LengthGuard {
 }
 
 /// One compiled pattern line: tokens, optional length guard, and weights.
+///
+/// Exposed so [PatternSet.patterns] can be inspected. Token and guard types
+/// remain in this library's implementation files.
 class CompiledPattern {
   /// Creates a compiled pattern.
   const CompiledPattern({
@@ -87,10 +90,19 @@ class CompiledPattern {
     required this.trailingBoundary,
   });
 
+  /// Optional joined-run length constraint, or `null` if none.
   final LengthGuard? guard;
+
+  /// Letters and group tokens in this pattern.
   final List<Token> tokens;
+
+  /// Priority or suppression at each connection, aligned with [tokens].
   final List<Weight?> weights;
+
+  /// Whether the pattern only matches at the start of a joined run.
   final bool leadingBoundary;
+
+  /// Whether the pattern only matches at the end of a joined run.
   final bool trailingBoundary;
 }
 
@@ -235,7 +247,9 @@ class _Parser {
     }
 
     final LengthGuard guard;
-    if (trimmed.startsWith(':') && trimmed.endsWith(':') && trimmed.length >= 2) {
+    if (trimmed.startsWith(':') &&
+        trimmed.endsWith(':') &&
+        trimmed.length >= 2) {
       guard = OpenLength(bound(trimmed.substring(1, trimmed.length - 1)));
     } else if (trimmed.endsWith(':')) {
       guard = MinLength(bound(trimmed.substring(0, trimmed.length - 1)));
@@ -250,8 +264,9 @@ class _Parser {
     }
 
     final boundsOk = switch (guard) {
-      ExactLength(:final n) || MinLength(:final n) || OpenLength(:final n) =>
-        n >= 2,
+      ExactLength(:final n) ||
+      MinLength(:final n) ||
+      OpenLength(:final n) => n >= 2,
       RangeLength(:final lo, :final hi) => lo >= 2 && lo <= hi,
     };
     if (boundsOk) {
@@ -353,9 +368,7 @@ class _Parser {
         break;
       }
       final isNameChar =
-          (c >= 0x41 && c <= 0x5A) ||
-          (c >= 0x61 && c <= 0x7A) ||
-          c == 0x5F;
+          (c >= 0x41 && c <= 0x5A) || (c >= 0x61 && c <= 0x7A) || c == 0x5F;
       if (!isNameChar) {
         break;
       }
