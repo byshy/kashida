@@ -76,7 +76,9 @@ class OpenLength extends LengthGuard {
   final int n;
 }
 
+/// One compiled pattern line: tokens, optional length guard, and weights.
 class CompiledPattern {
+  /// Creates a compiled pattern.
   const CompiledPattern({
     required this.guard,
     required this.tokens,
@@ -94,7 +96,10 @@ class CompiledPattern {
 
 /// A compiled set of kashida insertion patterns.
 class PatternSet {
+  /// Creates a set from already-compiled patterns.
   const PatternSet(this.patterns);
+
+  /// Patterns in source order, including those pulled in by a `use` line.
   final List<CompiledPattern> patterns;
 }
 
@@ -384,6 +389,11 @@ String? _parseUse(String line) {
 }
 
 /// Compiles pattern text into a [PatternSet].
+///
+/// Blank lines and `#` comments are ignored. A line `use <name>` inlines a
+/// built-in set (see [builtinPatternSet]).
+///
+/// Throws [CompileError] when a line cannot be parsed.
 PatternSet compilePatternText(String text) {
   final patterns = <CompiledPattern>[];
   final lines = text.split('\n');

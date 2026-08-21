@@ -1,5 +1,8 @@
 /// Finding kashida (tatweel) insertion points and priorities, driven by a
 /// small pattern language.
+///
+/// Compile rules with [compilePatternText] or load a built-in set with
+/// [builtinPatternSet], then call [findKashidaPoints].
 library;
 
 export 'src/builtin.dart';

@@ -4,6 +4,7 @@ import 'resolve.dart';
 
 /// A point where a kashida may be inserted.
 class KashidaPoint {
+  /// Creates a point after grapheme cluster [index] with [priority] 0–9.
   const KashidaPoint({required this.index, required this.priority});
 
   /// The grapheme cluster index the kashida goes after.
@@ -25,7 +26,10 @@ class KashidaPoint {
   String toString() => 'KashidaPoint(index: $index, priority: $priority)';
 }
 
-/// Kashida insertion points for [text] from the pattern set alone.
+/// Kashida insertion points for [text] from [set] alone.
+///
+/// Unlike [findKashidaPoints], this does not strip existing tatweel.
+/// Indices are grapheme-cluster offsets into [text] as given.
 List<KashidaPoint> findKashidaPointsPatterns(String text, PatternSet set) {
   final graphemes = splitGraphemes(text);
   final out = <KashidaPoint>[];
@@ -35,6 +39,10 @@ List<KashidaPoint> findKashidaPointsPatterns(String text, PatternSet set) {
   return out;
 }
 
+/// [text] with bare tatweel (U+0640) removed.
+///
+/// A tatweel that carries a combining mark is kept, because it is a seat for
+/// that mark rather than an elongation.
 String stripBareTatweel(String text) {
   if (!text.contains(kashida)) {
     return text;

@@ -13,10 +13,17 @@ const _builtinPatternSetNames = <String>[
   'syriac',
 ];
 
+/// Names of the built-in pattern sets, in a stable order.
+///
+/// Currently `arabic-naskh`, `arabic-nastaliq`, `arabic-simple`, and `syriac`.
 List<String> builtinPatternSetNames() => _builtinPatternSetNames;
 
+/// Whether [name] is one of [builtinPatternSetNames].
 bool isBuiltinPatternSet(String name) => _builtinPatternSetNames.contains(name);
 
+/// The compiled built-in set named [name], or `null` if it is unknown.
+///
+/// Results are cached. Pass the same names as in [builtinPatternSetNames].
 PatternSet? builtinPatternSet(String name) {
   final cached = _cache[name];
   if (cached != null) {
