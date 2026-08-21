@@ -28,7 +28,8 @@ and the
 ## Demo
 
 The example’s **Justify** tab: pick a face and a pattern set, then fill a
-pixel width. Last line of each paragraph stays short.
+pixel width. Last line of each paragraph stays short unless **Justify last
+line** is on.
 
 ![Justifying a paragraph with kashida](doc/justify.gif)
 

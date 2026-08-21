@@ -36,6 +36,7 @@ class JustifyPage extends StatelessWidget {
           minKashidas: demo.minKashidas.round(),
           maxKashidas: demo.maxKashidas.round(),
           justified: demo.justify,
+          justifyLastLine: demo.justifyLastLine,
           applyKashida: demo.applyKashida,
           removeExistingKashida: demo.removeExistingKashida,
           fill: demo.fillStyle,
@@ -132,6 +133,11 @@ class JustifyPage extends StatelessWidget {
                   onSelected: demo.setJustify,
                 ),
                 FilterChip(
+                  label: const Text('Justify last line'),
+                  selected: demo.justifyLastLine,
+                  onSelected: demo.justify ? demo.setJustifyLastLine : null,
+                ),
+                FilterChip(
                   label: const Text('Apply kashida'),
                   selected: demo.applyKashida,
                   onSelected: demo.justify ? demo.setApplyKashida : null,
@@ -183,9 +189,11 @@ class JustifyPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             DemoSection(
-              title: demo.justify
-                  ? 'KashidaText (last line of each paragraph left short)'
-                  : 'KashidaText, unjustified',
+              title: !demo.justify
+                  ? 'KashidaText, unjustified'
+                  : demo.justifyLastLine
+                  ? 'KashidaText (every line stretched, including the last)'
+                  : 'KashidaText (last line of each paragraph left short)',
               subtitle:
                   'layoutParagraphStyled + unusedWidth leftover on stretched lines: '
                   '${leftover.isEmpty ? 'none' : leftover.map((w) => '${w.toStringAsFixed(1)}px').join(', ')}',
@@ -200,6 +208,7 @@ class JustifyPage extends StatelessWidget {
                   minKashidas: demo.minKashidas.round(),
                   maxKashidas: demo.maxKashidas.round(),
                   justified: demo.justify,
+                  justifyLastLine: demo.justifyLastLine,
                   applyKashida: demo.applyKashida,
                   removeExistingKashida: demo.removeExistingKashida,
                   fill: demo.fillStyle,

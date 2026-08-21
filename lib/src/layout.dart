@@ -57,7 +57,7 @@ class KashidaWord {
 
 /// One wrapped line of [KashidaWord]s.
 class KashidaLine {
-  /// Creates a line. [stretch] is true for justified lines that are not last.
+  /// Creates a line. [stretch] is true when the line is filled to the target width.
   const KashidaLine({required this.words, required this.stretch});
 
   /// Words on this line, in logical order.
@@ -236,8 +236,8 @@ void _justifySyriac(
 /// Wraps [text] to [width] and optionally fills lines with tatweel.
 ///
 /// [measure] is the only font/metrics hook: return the width of a string in
-/// the same units as [width]. The last line of each newline-separated
-/// paragraph is not stretched.
+/// the same units as [width]. Unless [justifyLastLine] is true, the last line
+/// of each newline-separated paragraph is not stretched.
 ///
 /// [insertKashida] is a different operation: it does not wrap or honor width.
 ///
@@ -252,6 +252,7 @@ List<KashidaLine> layoutParagraph(
   int minKashidas = 1,
   int maxKashidas = 4,
   bool justified = true,
+  bool justifyLastLine = false,
   bool applyKashida = true,
   bool removeExistingKashida = true,
   KashidaFillStyle? fill,
@@ -271,6 +272,7 @@ List<KashidaLine> layoutParagraph(
         minKashidas: minKashidas,
         maxKashidas: maxKashidas,
         justified: justified,
+        justifyLastLine: justifyLastLine,
         applyKashida: applyKashida,
         removeExistingKashida: removeExistingKashida,
         fill: fillStyle,
@@ -288,6 +290,7 @@ List<KashidaLine> _layoutBlock(
   required int minKashidas,
   required int maxKashidas,
   required bool justified,
+  required bool justifyLastLine,
   required bool applyKashida,
   required bool removeExistingKashida,
   required KashidaFillStyle fill,
@@ -305,7 +308,8 @@ List<KashidaLine> _layoutBlock(
   final out = <KashidaLine>[];
   for (var index = 0; index < broken.length; index++) {
     final line = broken[index];
-    final stretch = justified && index < broken.length - 1;
+    final isLast = index == broken.length - 1;
+    final stretch = justified && (!isLast || justifyLastLine);
     if (stretch && applyKashida) {
       justify(line, width, measure, min: minKashidas, max: maxKashidas);
     }

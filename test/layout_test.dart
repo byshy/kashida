@@ -42,6 +42,30 @@ void main() {
     expect(lines.take(lines.length - 1).every((line) => line.stretch), isTrue);
   });
 
+  test('justifyLastLine stretches every line including the last', () {
+    final lines = layoutParagraph(
+      _sample,
+      naskh,
+      width: 16,
+      measure: _ems,
+      justifyLastLine: true,
+    );
+    expect(lines.length, greaterThan(1));
+    expect(lines.every((line) => line.stretch), isTrue);
+  });
+
+  test('justifyLastLine is ignored when unjustified', () {
+    final lines = layoutParagraph(
+      _sample,
+      naskh,
+      width: 16,
+      measure: _ems,
+      justified: false,
+      justifyLastLine: true,
+    );
+    expect(lines.every((line) => line.stretch == false), isTrue);
+  });
+
   test('applyKashida false still wraps but inserts no tatweel', () {
     final lines = layoutParagraph(
       _sample,

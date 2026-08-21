@@ -1,3 +1,7 @@
+## 0.0.4
+
+* Optional `justifyLastLine` on `layoutParagraph` / `KashidaText` to stretch the last line of each paragraph.
+
 ## 0.0.3
 
 * Expand the example into justify / find-and-insert / rules tabs.

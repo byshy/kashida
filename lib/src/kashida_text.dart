@@ -7,7 +7,8 @@ import 'pattern.dart';
 /// Justified Arabic/Syriac paragraph using [patternSet] and [style].
 ///
 /// Stretched lines put leftover pixels between words (`spaceBetween`).
-/// Newlines start a new paragraph (last line of each is not stretched).
+/// Newlines start a new paragraph. The last line of each is stretched only
+/// when [justifyLastLine] is true.
 class KashidaText extends StatelessWidget {
   /// Creates a kashida-justified text block of [width] logical pixels.
   const KashidaText(
@@ -21,6 +22,7 @@ class KashidaText extends StatelessWidget {
     this.minKashidas = 1,
     this.maxKashidas = 4,
     this.justified = true,
+    this.justifyLastLine = false,
     this.applyKashida = true,
     this.removeExistingKashida = true,
     this.fill,
@@ -53,6 +55,9 @@ class KashidaText extends StatelessWidget {
   /// Whether non-final lines of a paragraph should stretch.
   final bool justified;
 
+  /// Whether the last line of each paragraph should also stretch to [width].
+  final bool justifyLastLine;
+
   /// Whether stretching may insert tatweel.
   final bool applyKashida;
 
@@ -79,6 +84,7 @@ class KashidaText extends StatelessWidget {
       minKashidas: minKashidas,
       maxKashidas: maxKashidas,
       justified: justified,
+      justifyLastLine: justifyLastLine,
       applyKashida: applyKashida,
       removeExistingKashida: removeExistingKashida,
       fill: fill,

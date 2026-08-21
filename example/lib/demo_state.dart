@@ -15,6 +15,7 @@ class DemoController extends ChangeNotifier {
   double minKashidas = 2;
   double maxKashidas = 4;
   bool justify = true;
+  bool justifyLastLine = false;
   bool applyKashida = true;
   bool removeExistingKashida = true;
   KashidaFillStyle? fillOverride;
@@ -110,6 +111,11 @@ class DemoController extends ChangeNotifier {
 
   void setJustify(bool value) {
     justify = value;
+    notifyListeners();
+  }
+
+  void setJustifyLastLine(bool value) {
+    justifyLastLine = value;
     notifyListeners();
   }
 

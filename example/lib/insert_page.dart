@@ -98,6 +98,7 @@ class _InsertPageState extends State<InsertPage> {
           minKashidas: demo.minKashidas.round(),
           maxKashidas: demo.maxKashidas.round(),
           justified: true,
+          justifyLastLine: demo.justifyLastLine,
           applyKashida: true,
           removeExistingKashida: false,
           fill: demo.fillStyle,

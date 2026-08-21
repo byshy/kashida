@@ -28,6 +28,19 @@ void main() {
     expect(lines.take(lines.length - 1).every((line) => line.stretch), isTrue);
   });
 
+  test('justifyLastLine stretches every line including the last', () {
+    final set = builtinPatternSet('arabic-naskh')!;
+    final lines = layoutParagraph(
+      sampleText,
+      set,
+      style,
+      width: 400,
+      justifyLastLine: true,
+    );
+    expect(lines.length, greaterThan(1));
+    expect(lines.every((line) => line.stretch), isTrue);
+  });
+
   test('empty and whitespace produce no lines', () {
     final set = builtinPatternSet('arabic-naskh')!;
     expect(layoutParagraph('', set, style, width: 400), isEmpty);
