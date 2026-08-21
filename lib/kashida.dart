@@ -1,5 +1,8 @@
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+/// Finding kashida (tatweel) insertion points and priorities, driven by a
+/// small pattern language.
+library;
+
+export 'src/builtin.dart';
+export 'src/error.dart';
+export 'src/kashida_core.dart';
+export 'src/pattern.dart' show compilePatternText, PatternSet;

@@ -1,5 +1,5 @@
 name: kashida
-description: "A new Flutter project."
+description: "Finding kashida (tatweel) insertion points and priorities, driven by a small pattern language."
 version: 0.0.1
 homepage:
 
@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  characters: ^1.4.0
 
 dev_dependencies:
   flutter_test:
